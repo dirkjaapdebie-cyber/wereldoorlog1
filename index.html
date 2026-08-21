@@ -3,60 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Musea rondom Abbeville - Inclusief Live Weerradar</title>
+  <title>Musea & Live Buienradar rondom Abbeville</title>
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background-color: #f4f4f9;
-    }
-    h1 {
-      margin-top: 0;
-      color: #1a202c;
-    }
-    #map {
-      height: 650px;
-      width: 100%;
-      border-radius: 8px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-    }
-    .legend {
-      background: white;
-      padding: 10px 15px;
-      line-height: 24px;
-      border-radius: 5px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      font-size: 13px;
-    }
-    .legend i {
-      width: 12px;
-      height: 12px;
-      float: left;
-      margin-right: 8px;
-      margin-top: 6px;
-      border-radius: 50%;
-    }
-    .popup-link {
-      display: inline-block;
-      margin-top: 8px;
-      color: #3182ce;
-      font-weight: bold;
-      text-decoration: none;
-    }
-    .popup-link:hover {
-      text-decoration: underline;
-    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f9; }
+    h1 { margin-top: 0; color: #1a202c; }
+    #map { height: 650px; width: 100%; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+    .legend { background: white; padding: 10px 15px; line-height: 24px; border-radius: 5px; box-shadow: 0 0 15px rgba(0,0,0,0.2); font-size: 13px; }
+    .legend i { width: 12px; height: 12px; float: left; margin-right: 8px; margin-top: 6px; border-radius: 50%; }
+    .popup-link { display: inline-block; margin-top: 8px; color: #3182ce; font-weight: bold; text-decoration: none; }
+    .popup-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
   <h1>Musea & Live Buienradar rondom Abbeville</h1>
-  <p>Vink rechtsboven <b>"🌧️ Live Buienradar"</b> aan om de actuele neerslag-overlay over de musea heen te tonen.</p>
+  <p>Vink rechtsboven <b>"🌧️ Live Buienradar"</b> aan voor de actuele neerslag overlay.</p>
   
   <div id="map"></div>
 
@@ -64,149 +29,100 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
   <script>
-    // 1. Basislagen
-    var osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 18,
-      attribution: '© OpenStreetMap'
-    });
+    var osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap' });
+    var esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { attribution: 'Satelliet' });
 
-    var esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: 'Satelliet'
-    });
+    var map = L.map('map', { center: [50.05, 2.1], zoom: 9, layers: [osmTile] });
 
-    // Initialiseer kaart
-    var map = L.map('map', {
-      center: [50.05, 2.1],
-      zoom: 9,
-      layers: [osmTile]
-    });
-
-    // Layer Groups
     var natureCoastLayer = L.layerGroup().addTo(map);
     var artCultureLayer = L.layerGroup().addTo(map);
     var ww1Layer = L.layerGroup().addTo(map);
-    var weatherRadarLayer = L.layerGroup(); // DYNAMISCHE WEERLAAG
+    var weatherRadarLayer = L.layerGroup().addTo(map); // Standaard AAN zetten om te testen
 
-    // Custom Icons
-    var greenIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
+    // Icons
+    var blueIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+    var violetIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+    var orangeIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+    var redIcon = L.icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
 
-    var violetIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
+    // Verblijf
+    L.marker([50.1058, 1.8347], {icon: blueIcon}).addTo(map)
+      .bindPopup("<b>🏡 Huisje La Chaux'mière</b><br>Verblijf / Thuisbasis<br><br><a href='https://maps.app.goo.gl/7RmpDMyAGLboHuYB9' target='_blank' class='popup-link'>📍 Open in Google Maps &rarr;</a>");
 
-    var orangeIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
-    // Extra Custom Icon voor de accommodatie
-var blueIcon = L.icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-});
-
-// Accommodatie: La Chaux'mière
-L.marker([50.1058, 1.8347], {icon: blueIcon}).addTo(map)
-  .bindPopup("<b>🏡 Huisje La Chaux'mière</b><br>Verblijf / Thuisbasis<br><br><a href='https://maps.app.goo.gl/7RmpDMyAGLboHuYB9' target='_blank' class='popup-link'>📍 Open in Google Maps &rarr;</a>");
-
-    var redIcon = L.icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-    });
-
-    // Basis: Abbeville
-    L.marker([50.1058, 1.8347], {icon: greenIcon}).addTo(map)
-      .bindPopup("<b>Abbeville</b><br>Vertrekpunt / Basis");
-
-    // A. NATUUR, KUST & AMBACHTEN (Paarse Markers)
-    var natureCoastMuseums = [
-      { name: "Maison de la Baie de Somme (Lanchères)", lat: 50.1833, lng: 1.5500, time: "~25 min", desc: "Flora, fauna, zeehonden en estuariumdynamiek.", url: "https://www.baiedesomme.fr/lieu/1-11-maison-de-la-baie-de-somme" },
-      { name: "Musée Picarvie (Saint-Valery-sur-Somme)", lat: 50.1889, lng: 1.6292, time: "~20 min", desc: "Sfeervol gereconstrueerd 19e-eeuws Picaard vissersdorp.", url: "https://picarvie.fr/" },
-      { name: "Musée du Tréport (Le Tréport)", lat: 50.0612, lng: 1.3719, time: "~40 min", desc: "Visserij, zeebadcultuur en reddingswezen.", url: "https://www.ville-le-treport.fr/musee-du-treport/" }
+    // Musea Natuur & Kust
+    var natureCoast = [
+      { name: "Maison de la Baie de Somme", lat: 50.1833, lng: 1.5500, time: "~25 min", url: "https://www.baiedesomme.fr/lieu/1-11-maison-de-la-baie-de-somme" },
+      { name: "Musée Picarvie", lat: 50.1889, lng: 1.6292, time: "~20 min", url: "https://picarvie.fr/" },
+      { name: "Musée du Tréport", lat: 50.0612, lng: 1.3719, time: "~40 min", url: "https://www.ville-le-treport.fr/musee-du-treport/" }
     ];
+    natureCoast.forEach(m => L.marker([m.lat, m.lng], {icon: violetIcon}).addTo(natureCoastLayer).bindPopup(`<b>${m.name}</b><br>Rijtijd: ${m.time}<br><a href='${m.url}' target='_blank' class='popup-link'>🌐 Website &rarr;</a>`));
 
-    natureCoastMuseums.forEach(function(m) {
-      L.marker([m.lat, m.lng], {icon: violetIcon}).addTo(natureCoastLayer)
-        .bindPopup("<b>" + m.name + "</b><br><b>Rijtijd:</b> " + m.time + "<br><br>" + m.desc + "<br><a href='" + m.url + "' target='_blank' class='popup-link'>🌐 Bezoek website &rarr;</a>");
-    });
-
-    // B. KUNST, KASTEEL, LITERATUUR & TECHNIEK (Oranje Markers)
-    var artCultureMuseums = [
-      { name: "Musée Boucher de Perthes (Abbeville)", lat: 50.1081, lng: 1.8314, time: "~5 min", desc: "Lokale archeologie, prehistorie en schone kunsten.", url: "https://www.abbeville.fr/culture/musee-boucher-de-perthes.html" },
-      { name: "Château d'Eu - Musée Louis-Philippe (Eu)", lat: 50.0486, lng: 1.4189, time: "~35 min", desc: "Renaissancekasteel van koning Louis-Philippe.", url: "https://www.chateau-eu.fr/" },
-      { name: "Maison de Jules Verne (Amiens)", lat: 49.8892, lng: 2.3028, time: "~45 min", desc: "Woonhuis en werkkamer van Jules Verne.", url: "https://www.amiens.fr/Maison-de-Jules-Verne" },
-      { name: "Musée de Picardie (Amiens)", lat: 49.8906, lng: 2.2961, time: "~45 min", desc: "'Het kleine Louvre van het Noorden'.", url: "https://www.amiens.fr/Musee-de-Picardie" },
-      { name: "Musée Caudron (Rue)", lat: 50.2722, lng: 1.6681, time: "~25 min", desc: "Luchtvaartpioniers de gebroeders Caudron.", url: "https://www.musee-caudron.fr/" }
+    // Musea Kunst/Cultuur
+    var artCulture = [
+      { name: "Musée Boucher de Perthes", lat: 50.1081, lng: 1.8314, time: "~5 min", url: "https://www.abbeville.fr/culture/musee-boucher-de-perthes.html" },
+      { name: "Château d'Eu - Musée Louis-Philippe", lat: 50.0486, lng: 1.4189, time: "~35 min", url: "https://www.chateau-eu.fr/" },
+      { name: "Maison de Jules Verne", lat: 49.8892, lng: 2.3028, time: "~45 min", url: "https://www.amiens.fr/Maison-de-Jules-Verne" },
+      { name: "Musée de Picardie", lat: 49.8906, lng: 2.2961, time: "~45 min", url: "https://www.amiens.fr/Musee-de-Picardie" },
+      { name: "Musée Caudron", lat: 50.2722, lng: 1.6681, time: "~25 min", url: "https://www.musee-caudron.fr/" }
     ];
+    artCulture.forEach(m => L.marker([m.lat, m.lng], {icon: orangeIcon}).addTo(artCultureLayer).bindPopup(`<b>${m.name}</b><br>Rijtijd: ${m.time}<br><a href='${m.url}' target='_blank' class='popup-link'>🌐 Website &rarr;</a>`));
 
-    artCultureMuseums.forEach(function(m) {
-      L.marker([m.lat, m.lng], {icon: orangeIcon}).addTo(artCultureLayer)
-        .bindPopup("<b>" + m.name + "</b><br><b>Rijtijd:</b> " + m.time + "<br><br>" + m.desc + "<br><a href='" + m.url + "' target='_blank' class='popup-link'>🌐 Bezoek website &rarr;</a>");
-    });
-
-    // C. WOI HISTORIE (Rode Markers)
-    var ww1Museums = [
-      { name: "Museum Somme 1916 (Albert)", lat: 50.0031, lng: 2.6483, time: "~50 min", desc: "230m ondergronds tunnelcomplex.", url: "https://www.musee-somme-1916.eu/" },
-      { name: "Beaumont-Hamel Newfoundland Memorial", lat: 50.0736, lng: 2.6481, time: "~55 min", desc: "Bewaard gebleven slagveld en loopgraven.", url: "https://www.veterans.gc.ca/eng/remembrance/memorials/beaumont-hamel" },
-      { name: "Thiepval Memorial", lat: 50.0506, lng: 2.6856, time: "~55 min", desc: "Grootste Britse oorlogsmonument.", url: "https://www.cwgc.org/" },
-      { name: "Lochnagar Crater (Ovillers)", lat: 50.0156, lng: 2.6972, time: "~55 min", desc: "Gigantische mijnkrater uit 1916.", url: "https://www.lochnagarcrater.org/" },
-      { name: "Historial de la Grande Guerre (Péronne)", lat: 49.9292, lng: 2.9322, time: "~1 uur", desc: "Internationaal museum in het kasteel.", url: "https://www.historial.fr/" }
+    // Musea WOI
+    var ww1 = [
+      { name: "Museum Somme 1916", lat: 50.0031, lng: 2.6483, time: "~50 min", url: "https://www.musee-somme-1916.eu/" },
+      { name: "Beaumont-Hamel Memorial", lat: 50.0736, lng: 2.6481, time: "~55 min", url: "https://www.veterans.gc.ca/eng/remembrance/memorials/beaumont-hamel" },
+      { name: "Thiepval Memorial", lat: 50.0506, lng: 2.6856, time: "~55 min", url: "https://www.cwgc.org/" },
+      { name: "Lochnagar Crater", lat: 50.0156, lng: 2.6972, time: "~55 min", url: "https://www.lochnagarcrater.org/" },
+      { name: "Historial de la Grande Guerre", lat: 49.9292, lng: 2.9322, time: "~1 uur", url: "https://www.historial.fr/" }
     ];
+    ww1.forEach(m => L.marker([m.lat, m.lng], {icon: redIcon}).addTo(ww1Layer).bindPopup(`<b>${m.name}</b><br>Rijtijd: ${m.time}<br><a href='${m.url}' target='_blank' class='popup-link'>🌐 Website &rarr;</a>`));
 
-    ww1Museums.forEach(function(m) {
-      L.marker([m.lat, m.lng], {icon: redIcon}).addTo(ww1Layer)
-        .bindPopup("<b>" + m.name + "</b><br><b>Rijtijd:</b> " + m.time + "<br><br>" + m.desc + "<br><a href='" + m.url + "' target='_blank' class='popup-link'>🌐 Bezoek website &rarr;</a>");
-    });
-
-    // D. DYNAMISCHE WEERDAPLAAG OPHALEN (RainViewer API)
+    // DYNAMISCHE BUIENRADAR (Werkende API Koppeling)
     fetch('https://api.rainviewer.com/public/weather-maps.json')
       .then(res => res.json())
-      .then(data => {
-        // Pak het meest recente radarframe
-        var latestTimestamp = data.radar.past[data.radar.past.length - 1].time;
-        
-        var radarTile = L.tileLayer(`https://tilecache.rainviewer.com/v2/radar/${latestTimestamp}/256/{z}/{x}/{y}/2/1_1.png`, {
-          opacity: 0.6,
-          attribution: 'Weerdata © <a href="https://www.rainviewer.com/" target="_blank">RainViewer</a>'
+      .then(apiData => {
+        var host = apiData.host || "https://tilecache.rainviewer.com";
+        var radarFrames = apiData.radar.past;
+        var lastFrame = radarFrames[radarFrames.length - 1]; // Meest actuele frame
+
+        var radarTile = L.tileLayer(`${host}${lastFrame.path}/256/{z}/{x}/{y}/2/1_1.png`, {
+          opacity: 0.65,
+          zIndex: 500,
+          attribution: 'Weerdata © RainViewer'
         });
 
         weatherRadarLayer.addLayer(radarTile);
       })
-      .catch(err => console.error("Kon weerradar niet laden:", err));
+      .catch(err => {
+        console.warn("RainViewer kon niet laden, alternatieve laag wordt gebruikt.", err);
+        // Fallback als RainViewer blokkeert: RainViewer Direct Tile URL
+        var fallbackTile = L.tileLayer('https://tilecache.rainviewer.com/v2/radar/nowcast_0/256/{z}/{x}/{y}/2/1_1.png', {
+          opacity: 0.6,
+          zIndex: 500
+        });
+        weatherRadarLayer.addLayer(fallbackTile);
+      });
 
-    // Lagen-besturing (Layer Control)
-    var baseMaps = {
-      "OpenStreetMap": osmTile,
-      "Satelliet": esriSat
-    };
+    // Besturing & Legenda
+    L.control.layers(
+      { "OpenStreetMap": osmTile, "Satelliet": esriSat },
+      { 
+        "🌧️ Live Buienradar": weatherRadarLayer,
+        "Natuur & Kust": natureCoastLayer,
+        "Kunst, Kasteel & Techniek": artCultureLayer,
+        "WOI Historie": ww1Layer
+      },
+      { collapsed: false }
+    ).addTo(map);
 
-    var overlayMaps = {
-      "🌧️ Live Buienradar": weatherRadarLayer,
-      "Natuur, Kust & Ambachten": natureCoastLayer,
-      "Kunst, Kasteel, Literatuur & Techniek": artCultureLayer,
-      "WOI Historie & Memorials": ww1Layer
-    };
-
-    L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(map);
-
-    // Legenda
     var legend = L.control({position: 'bottomright'});
-    legend.onAdd = function (map) {
+    legend.onAdd = function () {
       var div = L.DomUtil.create('div', 'legend');
-      div.innerHTML += '<b>Thema Legenda</b><br>';
-      div.innerHTML += '<i style="background: green;"></i> Abbeville (Basis)<br>';
-      div.innerHTML += '<i style="background: #9c27b0;"></i> Natuur, Kust & Ambacht<br>';
-      div.innerHTML += '<i style="background: #ff9800;"></i> Kunst, Kasteel, Literatuur & Techniek<br>';
-      div.innerHTML += '<i style="background: #f44336;"></i> WOI Historie<br>';
-      div.innerHTML += '<i style="background: #2196F3;"></i> La Chaux\'mière (Verblijf)<br>';
+      div.innerHTML = '<b>Legenda</b><br>' +
+        '<i style="background: #2196F3;"></i> La Chaux\'mière (Verblijf)<br>' +
+        '<i style="background: #9c27b0;"></i> Natuur & Kust<br>' +
+        '<i style="background: #ff9800;"></i> Kunst & Cultuur<br>' +
+        '<i style="background: #f44336;"></i> WOI Historie<br>';
       return div;
     };
     legend.addTo(map);
