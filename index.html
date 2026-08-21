@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Musea rondom Abbeville - Inclusief Websites</title>
+  <title>Musea rondom Abbeville - Inclusief Live Weerradar</title>
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -55,8 +55,8 @@
 </head>
 <body>
 
-  <h1>Musea binnen 1 uur van Abbeville</h1>
-  <p>Klik op een marker om de details en de **link naar de officiële website** van het museum te bekijken.</p>
+  <h1>Musea & Live Buienradar rondom Abbeville</h1>
+  <p>Vink rechtsboven <b>"🌧️ Live Buienradar"</b> aan om de actuele neerslag-overlay over de musea heen te tonen.</p>
   
   <div id="map"></div>
 
@@ -85,6 +85,7 @@
     var natureCoastLayer = L.layerGroup().addTo(map);
     var artCultureLayer = L.layerGroup().addTo(map);
     var ww1Layer = L.layerGroup().addTo(map);
+    var weatherRadarLayer = L.layerGroup(); // DYNAMISCHE WEERLAAG
 
     // Custom Icons
     var greenIcon = L.icon({
@@ -117,24 +118,9 @@
 
     // A. NATUUR, KUST & AMBACHTEN (Paarse Markers)
     var natureCoastMuseums = [
-      { 
-        name: "Maison de la Baie de Somme (Lanchères)", 
-        lat: 50.1833, lng: 1.5500, time: "~25 min", 
-        desc: "Alles over de flora, fauna, zeehonden en estuariumdynamiek van de Somme-baai.",
-        url: "https://www.baiedesomme.fr/lieu/1-11-maison-de-la-baie-de-somme"
-      },
-      { 
-        name: "Musée Picarvie (Saint-Valery-sur-Somme)", 
-        lat: 50.1889, lng: 1.6292, time: "~20 min", 
-        desc: "Sfeervol gereconstrueerd 19e-eeuws Picaard vissersdorp.",
-        url: "https://picarvie.fr/"
-      },
-      { 
-        name: "Musée du Tréport (Le Tréport)", 
-        lat: 50.0612, lng: 1.3719, time: "~40 min", 
-        desc: "Visserij, zeebadcultuur en reddingswezen in een oude stadsgevangenis.",
-        url: "https://www.ville-le-treport.fr/musee-du-treport/"
-      }
+      { name: "Maison de la Baie de Somme (Lanchères)", lat: 50.1833, lng: 1.5500, time: "~25 min", desc: "Flora, fauna, zeehonden en estuariumdynamiek.", url: "https://www.baiedesomme.fr/lieu/1-11-maison-de-la-baie-de-somme" },
+      { name: "Musée Picarvie (Saint-Valery-sur-Somme)", lat: 50.1889, lng: 1.6292, time: "~20 min", desc: "Sfeervol gereconstrueerd 19e-eeuws Picaard vissersdorp.", url: "https://picarvie.fr/" },
+      { name: "Musée du Tréport (Le Tréport)", lat: 50.0612, lng: 1.3719, time: "~40 min", desc: "Visserij, zeebadcultuur en reddingswezen.", url: "https://www.ville-le-treport.fr/musee-du-treport/" }
     ];
 
     natureCoastMuseums.forEach(function(m) {
@@ -144,36 +130,11 @@
 
     // B. KUNST, KASTEEL, LITERATUUR & TECHNIEK (Oranje Markers)
     var artCultureMuseums = [
-      { 
-        name: "Musée Boucher de Perthes / Beffroi (Abbeville)", 
-        lat: 50.1081, lng: 1.8314, time: "~5 min", 
-        desc: "Lokale archeologie, prehistorische vondsten en schone kunsten.",
-        url: "https://www.abbeville.fr/culture/musee-boucher-de-perthes.html"
-      },
-      { 
-        name: "Château d'Eu - Musée Louis-Philippe (Eu)", 
-        lat: 50.0486, lng: 1.4189, time: "~35 min", 
-        desc: "Renaissancekasteel van koning Louis-Philippe met origineel interieur en tuinen.",
-        url: "https://www.chateau-eu.fr/"
-      },
-      { 
-        name: "Maison de Jules Verne (Amiens)", 
-        lat: 49.8892, lng: 2.3028, time: "~45 min", 
-        desc: "Woonhuis en werkkamer van de beroemde avonturen- en sciencefictionschrijver.",
-        url: "https://www.amiens.fr/Maison-de-Jules-Verne"
-      },
-      { 
-        name: "Musée de Picardie (Amiens)", 
-        lat: 49.8906, lng: 2.2961, time: "~45 min", 
-        desc: "'Het kleine Louvre van het Noorden' met archeologie en grote meesters.",
-        url: "https://www.amiens.fr/Musee-de-Picardie"
-      },
-      { 
-        name: "Musée Caudron (Rue)", 
-        lat: 50.2722, lng: 1.6681, time: "~25 min", 
-        desc: "Gewijd aan de gebroeders Caudron, pioniers van de Franse luchtvaart.",
-        url: "https://www.musee-caudron.fr/"
-      }
+      { name: "Musée Boucher de Perthes (Abbeville)", lat: 50.1081, lng: 1.8314, time: "~5 min", desc: "Lokale archeologie, prehistorie en schone kunsten.", url: "https://www.abbeville.fr/culture/musee-boucher-de-perthes.html" },
+      { name: "Château d'Eu - Musée Louis-Philippe (Eu)", lat: 50.0486, lng: 1.4189, time: "~35 min", desc: "Renaissancekasteel van koning Louis-Philippe.", url: "https://www.chateau-eu.fr/" },
+      { name: "Maison de Jules Verne (Amiens)", lat: 49.8892, lng: 2.3028, time: "~45 min", desc: "Woonhuis en werkkamer van Jules Verne.", url: "https://www.amiens.fr/Maison-de-Jules-Verne" },
+      { name: "Musée de Picardie (Amiens)", lat: 49.8906, lng: 2.2961, time: "~45 min", desc: "'Het kleine Louvre van het Noorden'.", url: "https://www.amiens.fr/Musee-de-Picardie" },
+      { name: "Musée Caudron (Rue)", lat: 50.2722, lng: 1.6681, time: "~25 min", desc: "Luchtvaartpioniers de gebroeders Caudron.", url: "https://www.musee-caudron.fr/" }
     ];
 
     artCultureMuseums.forEach(function(m) {
@@ -181,38 +142,13 @@
         .bindPopup("<b>" + m.name + "</b><br><b>Rijtijd:</b> " + m.time + "<br><br>" + m.desc + "<br><a href='" + m.url + "' target='_blank' class='popup-link'>🌐 Bezoek website &rarr;</a>");
     });
 
-    // C. WOI HISTORIE & MEMORIALS (Rode Markers)
+    // C. WOI HISTORIE (Rode Markers)
     var ww1Museums = [
-      { 
-        name: "Museum Somme 1916 (Albert)", 
-        lat: 50.0031, lng: 2.6483, time: "~50 min", 
-        desc: "230m ondergronds tunnelcomplex met diorama's van het loopgravenleven.",
-        url: "https://www.musee-somme-1916.eu/"
-      },
-      { 
-        name: "Beaumont-Hamel Newfoundland Memorial", 
-        lat: 50.0736, lng: 2.6481, time: "~55 min", 
-        desc: "Uitzonderlijk bewaard slagveld en origineel loopgravensysteem.",
-        url: "https://www.veterans.gc.ca/eng/remembrance/memorials/beaumont-hamel"
-      },
-      { 
-        name: "Thiepval Memorial & Bezoekerscentrum", 
-        lat: 50.0506, lng: 2.6856, time: "~55 min", 
-        desc: "Grootste Britse oorlogsmonument ter wereld met 72.000 namen van vermisten.",
-        url: "https://www.cwgc.org/visit-us/find-cemeteries-memorials/memorial-results/memorial-detail/?memorial=80000"
-      },
-      { 
-        name: "Lochnagar Crater (Ovillers-la-Boisselle)", 
-        lat: 50.0156, lng: 2.6972, time: "~55 min", 
-        desc: "Gigantische mijnkrater ontstaan op 1 juli 1916.",
-        url: "https://www.lochnagarcrater.org/"
-      },
-      { 
-        name: "Historial de la Grande Guerre (Péronne)", 
-        lat: 49.9292, lng: 2.9322, time: "~1 uur", 
-        desc: "Toonaangevend internationaal museum gehuisvest in het kasteel van Péronne.",
-        url: "https://www.historial.fr/"
-      }
+      { name: "Museum Somme 1916 (Albert)", lat: 50.0031, lng: 2.6483, time: "~50 min", desc: "230m ondergronds tunnelcomplex.", url: "https://www.musee-somme-1916.eu/" },
+      { name: "Beaumont-Hamel Newfoundland Memorial", lat: 50.0736, lng: 2.6481, time: "~55 min", desc: "Bewaard gebleven slagveld en loopgraven.", url: "https://www.veterans.gc.ca/eng/remembrance/memorials/beaumont-hamel" },
+      { name: "Thiepval Memorial", lat: 50.0506, lng: 2.6856, time: "~55 min", desc: "Grootste Britse oorlogsmonument.", url: "https://www.cwgc.org/" },
+      { name: "Lochnagar Crater (Ovillers)", lat: 50.0156, lng: 2.6972, time: "~55 min", desc: "Gigantische mijnkrater uit 1916.", url: "https://www.lochnagarcrater.org/" },
+      { name: "Historial de la Grande Guerre (Péronne)", lat: 49.9292, lng: 2.9322, time: "~1 uur", desc: "Internationaal museum in het kasteel.", url: "https://www.historial.fr/" }
     ];
 
     ww1Museums.forEach(function(m) {
@@ -220,13 +156,30 @@
         .bindPopup("<b>" + m.name + "</b><br><b>Rijtijd:</b> " + m.time + "<br><br>" + m.desc + "<br><a href='" + m.url + "' target='_blank' class='popup-link'>🌐 Bezoek website &rarr;</a>");
     });
 
-    // 4. Lagen-besturing (Layer Control)
+    // D. DYNAMISCHE WEERDAPLAAG OPHALEN (RainViewer API)
+    fetch('https://api.rainviewer.com/public/weather-maps.json')
+      .then(res => res.json())
+      .then(data => {
+        // Pak het meest recente radarframe
+        var latestTimestamp = data.radar.past[data.radar.past.length - 1].time;
+        
+        var radarTile = L.tileLayer(`https://tilecache.rainviewer.com/v2/radar/${latestTimestamp}/256/{z}/{x}/{y}/2/1_1.png`, {
+          opacity: 0.6,
+          attribution: 'Weerdata © <a href="https://www.rainviewer.com/" target="_blank">RainViewer</a>'
+        });
+
+        weatherRadarLayer.addLayer(radarTile);
+      })
+      .catch(err => console.error("Kon weerradar niet laden:", err));
+
+    // Lagen-besturing (Layer Control)
     var baseMaps = {
       "OpenStreetMap": osmTile,
       "Satelliet": esriSat
     };
 
     var overlayMaps = {
+      "🌧️ Live Buienradar": weatherRadarLayer,
       "Natuur, Kust & Ambachten": natureCoastLayer,
       "Kunst, Kasteel, Literatuur & Techniek": artCultureLayer,
       "WOI Historie & Memorials": ww1Layer
@@ -234,7 +187,7 @@
 
     L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(map);
 
-    // 5. Legenda
+    // Legenda
     var legend = L.control({position: 'bottomright'});
     legend.onAdd = function (map) {
       var div = L.DomUtil.create('div', 'legend');
