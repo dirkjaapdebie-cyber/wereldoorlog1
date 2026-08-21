@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WOI Musea & Frontlinies - Binnen 1 uur van Abbeville</title>
+  <title>WOI Musea & Historische Overlay - Somme & Westelijk Front</title>
   
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -17,10 +17,10 @@
     }
     h1 {
       margin-top: 0;
-      color: #333;
+      color: #1a365d;
     }
     #map {
-      height: 600px;
+      height: 650px;
       width: 100%;
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
@@ -40,29 +40,72 @@
       margin-top: 6px;
       border-radius: 50%;
     }
+    .info-panel {
+      margin-top: 15px;
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .img-preview {
+      max-width: 100%;
+      height: auto;
+      border-radius: 6px;
+      margin-top: 10px;
+      border: 1px solid #ddd;
+    }
   </style>
 </head>
 <body>
 
-  <h1>WOI Musea binnen 1 uur rijden vanaf Abbeville</h1>
-  <p>Klik op de rode markers voor WOI-musea en monumenten binnen ~1 uur rijden. De blauwe markers geven overige sleutellocaties aan het Westelijk Front weer.</p>
+  <h1>WOI Musea, Historische Overlay & Frontlinies</h1>
+  <p>Gebruik de lagenkiezer rechtsboven op de kaart om de <strong>Historische WOI Loopgravenkaart (1914–1918)</strong> in of uit te schakelen.</p>
   
   <div id="map"></div>
+
+  <div class="info-panel">
+    <h3>Overzichtskaart WOI Frontlijn & Musea</h3>
+    <p>Onderstaande afbeelding geef een overzicht van de linies ten opzichte van Abbeville en het Somme-estuarium (afbeelding: <code>overzichtskaart.png</code>):</p>
+    <img src="overzichtskaart.png" alt="WOI Overzichtskaart" class="img-preview" onerror="this.style.display='none'; document.getElementById('img-fallback').style.display='block';">
+    <div id="img-fallback" style="display:none; color: #718096; font-style: italic;">
+      (Plaats <code>overzichtskaart.png</code> in dezelfde map als dit HTML-bestand om de afbeelding hier af te beelden.)
+    </div>
+  </div>
 
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   
   <script>
-    // 1. Initialiseer de kaart gecentreerd tussen Abbeville en het Somme-slagveld
-    var map = L.map('map').setView([50.05, 2.2], 9);
-
-    // 2. OpenStreetMap tegel-laag toevoegen
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // 1. Basislagen definiëren
+    var osmTile = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+      attribution: '© OpenStreetMap'
+    });
 
-    // Custom Icoontjes (Rood voor musea < 1u van Abbeville, Groen voor Abbeville zelf)
+    // 2. Historische Overlay-laag (WOI loopgraven & frontkaarten via USGS/NLS historische tegels)
+    var historicalOverlay = L.tileLayer('https://tile.loc.gov/image-services/iiif/service:gmd:gmd5:g5832:g5832s:g5832s1:g5832s1_1918/{z}/{x}/{y}.png', {
+      maxZoom: 16,
+      opacity: 0.65,
+      attribution: 'Historische Kaart Overlay (1914–1918)'
+    });
+
+    // Alternative betrouwbare historische tegelserver (OpenTopo / Esri Historic)
+    var esriSat = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Satelliet'
+    });
+
+    // 3. Initialiseer kaart
+    var map = L.map('map', {
+      center: [50.05, 2.3],
+      zoom: 9,
+      layers: [osmTile] // Standaard actieve laag
+    });
+
+    // Marker groepen
+    var museumsLayer = L.layerGroup().addTo(map);
+    var otherLocationsLayer = L.layerGroup().addTo(map);
+
+    // Custom Icoontjes
     var redIcon = L.icon({
       iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
@@ -81,79 +124,60 @@
       shadowSize: [41, 41]
     });
 
-    // Startpunt: Abbeville
+    // Abbeville
     L.marker([50.1058, 1.8347], {icon: greenIcon}).addTo(map)
-      .bindPopup("<b>Abbeville</b><br>Vertrekpunt / Basis");
+      .bindPopup("<b>Abbeville</b><br>Basis / Belangrijk geallieerd spoorweg- en hospitaalknooppunt.");
 
-    // 3. Musea & Herdenkingslocaties binnen ~1 uur rijden vanaf Abbeville (Rode markers)
+    // Musea binnen 1 uur
     var nearbyMuseums = [
-      {
-        name: "Museum Somme 1916 (Albert)",
-        lat: 50.0031,
-        lng: 2.6483,
-        driveTime: "ca. 50 min",
-        desc: "Ondergronds museum in een tunnelcomplex onder de basiliek. Focus op de loopgravenstijd."
-      },
-      {
-        name: "Beaumont-Hamel Newfoundland Memorial",
-        lat: 50.0736,
-        lng: 2.6481,
-        driveTime: "ca. 55 min",
-        desc: "Zeer goed bewaard gebleven loopgraventerrein, bezoekerscentrum en brons kariboemonument."
-      },
-      {
-        name: "Thiepval Memorial & Bezoekerscentrum",
-        lat: 50.0506,
-        lng: 2.6856,
-        driveTime: "ca. 55 min",
-        desc: "Grootste Britse oorlogsmonument ter wereld met 72.000 namen van vermisten."
-      },
-      {
-        name: "Lochnagar Crater (Ovillers-la-Boisselle)",
-        lat: 50.0156,
-        lng: 2.6972,
-        driveTime: "ca. 55 min",
-        desc: "Enorme mijnkrater ontstaan op 1 juli 1916 door een ondergrondse ontploffing."
-      },
-      {
-        name: "Historial de la Grande Guerre (Péronne)",
-        lat: 49.9292,
-        lng: 2.9322,
-        driveTime: "ca. 1 uur (via A29)",
-        desc: "Toonaangevend internationaal museum in het kasteel van Péronne."
-      }
+      { name: "Museum Somme 1916 (Albert)", lat: 50.0031, lng: 2.6483, driveTime: "~50 min", desc: "Ondergronds museum in een tunnelcomplex onder de basiliek." },
+      { name: "Beaumont-Hamel Newfoundland Memorial", lat: 50.0736, lng: 2.6481, driveTime: "~55 min", desc: "Goed bewaard gebleven loopgraventerrein met bezoekerscentrum." },
+      { name: "Thiepval Memorial", lat: 50.0506, lng: 2.6856, driveTime: "~55 min", desc: "Grootste Britse oorlogsmonument ter wereld met 72.000 namen." },
+      { name: "Lochnagar Crater (Ovillers)", lat: 50.0156, lng: 2.6972, driveTime: "~55 min", desc: "Gigantische mijnkrater ontstaan op 1 juli 1916." },
+      { name: "Historial de la Grande Guerre (Péronne)", lat: 49.9292, lng: 2.9322, driveTime: "~1 uur", desc: "Internationaal museum in het kasteel van Péronne." }
     ];
 
-    // Voeg de nabije musea toe
     nearbyMuseums.forEach(function(place) {
-      L.marker([place.lat, place.lng], {icon: redIcon}).addTo(map)
+      L.marker([place.lat, place.lng], {icon: redIcon}).addTo(museumsLayer)
         .bindPopup("<b>" + place.name + "</b><br><b>Rijtijd vanaf Abbeville:</b> " + place.driveTime + "<br><br>" + place.desc);
     });
 
-    // 4. Overige locaties aan het Westelijk Front uit het overzicht (Standaard blauwe markers)
+    // Overige Westelijke & Frontlocaties
     var otherFrontLocations = [
-      { name: "Nieuwpoort (IJzermonding)", lat: 51.1492, lng: 2.7214, desc: "Belgische sector: Onderwaterzetting IJzerpolders." },
-      { name: "Diksmuide (Dodengang)", lat: 51.0333, lng: 2.8667, desc: "Belgische sector: Bewaarde Belgische loopgraven." },
-      { name: "Ieper (In Flanders Fields Museum)", lat: 50.8511, lng: 2.8858, desc: "Britse sector: Bekende Ypres Salient." },
-      { name: "Vimy Ridge (Canadees Monument)", lat: 50.3794, lng: 2.7736, desc: "Britse sector: Strategische hoogte heroverd door Canadezen." },
-      { name: "Arras (Carrière Wellington)", lat: 50.2833, lng: 2.7778, desc: "Britse sector: Ondergronds tunnelnetwerk." },
-      { name: "Chemin des Dames (Caverne du Dragon)", lat: 49.4422, lng: 3.7275, desc: "Franse sector: Strategisch kalksteenplateau." },
-      { name: "Verdun (Mémorial de Verdun)", lat: 49.2011, lng: 5.4339, desc: "Franse sector: Centrum van de uitputtingsslag in 1916." }
+      { name: "Étaples Military Cemetery", lat: 50.5175, lng: 1.6425, desc: "Grootste Britse militaire begraafplaats in Frankrijk." },
+      { name: "Montreuil-sur-Mer (GHQ)", lat: 50.4639, lng: 1.7628, desc: "Britse Generale Hoofdkwartier (Haig)." },
+      { name: "Boulogne-sur-Mer", lat: 50.7264, lng: 1.6147, desc: "Aanvoerhaven en hospitaalbasis." },
+      { name: "Amiens", lat: 49.8941, lng: 2.2957, desc: "Strategisch spoorwegknooppunt." },
+      { name: "Villers-Bretonneux", lat: 49.8861, lng: 2.5117, desc: "Verste Duitse opmars 1918 & Sir John Monash Centre." }
     ];
 
     otherFrontLocations.forEach(function(place) {
-      L.marker([place.lat, place.lng]).addTo(map)
+      L.marker([place.lat, place.lng]).addTo(otherLocationsLayer)
         .bindPopup("<b>" + place.name + "</b><br>" + place.desc);
     });
 
-    // 5. Legenda toevoegen
+    // Lagen-bediening toevoegen (Layer Control)
+    var baseMaps = {
+      "OpenStreetMap": osmTile,
+      "Satelliet": esriSat
+    };
+
+    var overlayMaps = {
+      "Historische WOI Overlay": historicalOverlay,
+      "Musea (<1u van Abbeville)": museumsLayer,
+      "Overige Front & Achterland": otherLocationsLayer
+    };
+
+    L.control.layers(baseMaps, overlayMaps, {collapsed: false}).addTo(map);
+
+    // Legenda
     var legend = L.control({position: 'bottomright'});
     legend.onAdd = function (map) {
       var div = L.DomUtil.create('div', 'legend');
       div.innerHTML += '<b>Legenda</b><br>';
-      div.innerHTML += '<i style="background: green;"></i> Abbeville (Startpunt)<br>';
-      div.innerHTML += '<i style="background: red;"></i> Musea binnen ~1u rijden<br>';
-      div.innerHTML += '<i style="background: #3388ff;"></i> Overige frontlocaties<br>';
+      div.innerHTML += '<i style="background: green;"></i> Abbeville (Basis)<br>';
+      div.innerHTML += '<i style="background: red;"></i> Musea binnen ~1u<br>';
+      div.innerHTML += '<i style="background: #3388ff;"></i> Front & Achterland<br>';
       return div;
     };
     legend.addTo(map);
